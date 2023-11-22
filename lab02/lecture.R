@@ -126,3 +126,61 @@ data.frame(
   X = bi,
   Y = po
 )
+
+x <- 2300/9
+y <- 1/9
+z <- 4/9
+(-100-x)^2*y + (100-x)^2*z + (500-x)^2*z
+
+dbinom(25,100, 1/4)
+dpois(25, 25)
+dbinom(c(10,30,50,70), 100, 1/4)
+dpois(c(10,30,50,70), 25)
+for (i in c(1:30)) {
+  x <- dbinom(i,100,1/4)
+  print(x)
+}
+for (i in c(1:30)) {
+  x <- dpois(i, 25)
+  print(x)
+}
+
+set_A <- c(10, 30, 50, 70)
+set_B <- seq(1, 30, by = 1)
+set_C <- seq(30, Inf, by = 1)
+# Parametry rozkładu dwumianowego
+n <- 100
+p <- 1/4
+
+# Parametr rozkładu Poissona
+lambda <- 25
+
+# Wartość, dla której obliczamy prawdopodobieństwo
+x_value <- 25
+
+prob_A_X <- dbinom(set_A, size = n, prob = p)
+prob_A_X
+prob_A_Y <- sum(dpois(set_A, lambda = lambda))
+prob_A_Y
+prob_B_X <- dbinom(set_B,n, p)
+
+function(x) 1
+?Uniform
+?dunif()
+?dexp()
+integrate(function(x) dexp(3), 4, Inf)
+pexp(4, rate = 3)
+# Define the density function
+f <- function(x) {3 * exp(-3 * x)}
+
+# Calculate P(X >= 4)
+p_x_geq_4 <- integrate(f, 4, Inf)$value
+?pnorm()
+pnorm(1, mean = 0, sd = 1)
+pnorm(-1)
+pnorm(3)-pnorm(-1)
+pnorm(5)-pnorm(-3)
+pnorm(7)-pnorm(-5)
+integrate(function(x) 1/6*(3*x-1), 2,8)
+(2*integrate(function(x) x^3, 2,8)$value + 6) / 6
+8^3
