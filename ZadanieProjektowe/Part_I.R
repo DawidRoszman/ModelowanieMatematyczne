@@ -2,9 +2,8 @@
 install.packages("fitdistrplus")
 library(fitdistrplus)
 
-ccc_d <- read.csv("C:/Users/dawid/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
 ccc_d <- read.csv("D:/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
-
+ccc_d <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
 class(ccc_d)
 
 kurs_zamkniecia <- ccc_d$Zamkniecie
@@ -33,5 +32,28 @@ cdfcomp(list(fnorm, fln, fg))
 ppcomp(list(fnorm, fln, fg))
 
 gofstat(list(fnorm, fln, fg))
+
+N <- 1000
+n <- length(kurs_zamkniecia)
+
+D <- c()
+
+shape <- fg$estimate[[1]]
+rate <- fg$estimate[[2]]
+
+for (i in 1:N) { 
+  
+  Y <- rgamma(n, shape, rate) 
+  D[i] <- ks.test(Y,pgamma,shape = shape, rate = rate,exact=TRUE)$statistic
+}
+
+dn <- ks.test(kurs_zamkniecia,pgamma,shape = shape, rate = rate,exact=TRUE)$statistic
+hist(D,prob=T)
+points(dn,0,pch=19,col=2)
+
+p_value <- length(D[D>dn])/N; p_value
+
+alpha <- 0.05
+p_value <= alpha
 
 
