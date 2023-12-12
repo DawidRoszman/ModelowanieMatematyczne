@@ -56,4 +56,96 @@ p_value <- length(D[D>dn])/N; p_value
 alpha <- 0.05
 p_value <= alpha
 
+# PART II
 
+
+
+
+# Spółka I
+y <- log(kurs_zamkniecia)
+r <- diff(y)
+plot(r)
+plot(kurs_zamkniecia)
+hist(r, probability = T)
+fnorm_r <- fitdist(r, "norm")
+
+# MC
+
+mean <- fnorm_r$estimate[1]
+sd <- fnorm_r$estimate[2]
+
+N <- 1000
+n <- length(r)
+
+D <- c()
+
+for (i in 1:N) { 
+  
+  Y <- rnorm(n, mean, sd) 
+  D[i] <- ks.test(Y,pnorm,mean, sd, exact=TRUE)$statistic
+}
+
+dn <- ks.test(r, pnorm, mean ,sd ,exact=TRUE)$statistic
+hist(D,prob=T)
+points(dn,0,pch=19,col=2)
+
+p_value <- length(D[D>dn])/N; p_value
+
+
+# Spółka II
+ccc_s <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/swg_d.csv")
+kurs_zamkniecia2 <- ccc_s$Zamkniecie
+y2 <- log(kurs_zamkniecia2)
+r2 <- diff(y2)
+plot(r2)
+hist(r2, probability = T)
+rnorm2 <- fitdist(r2, "norm")
+
+#MC
+
+mean <- rnorm2$estimate[1]
+sd <- rnorm2$estimate[2]
+
+N <- 1000
+n <- length(r2)
+
+D <- c()
+
+
+for (i in 1:N) { 
+  
+  Y <- rnorm(n, mean, sd) 
+  D[i] <- ks.test(Y,pnorm,mean, sd, exact=TRUE)$statistic
+}
+
+dn <- ks.test(r2, pnorm, mean ,sd ,exact=TRUE)$statistic
+hist(D,prob=T)
+points(dn,0,pch=19,col=2)
+
+p_value <- length(D[D>dn])/N; p_value
+
+denscomp(rnorm)
+qqcomp(rnorm)
+cdfcomp(rnorm)
+ppcomp(rnorm)
+gofstat(rnorm)
+
+denscomp(rnorm2)
+qqcomp(rnorm2)
+cdfcomp(rnorm2)
+ppcomp(rnorm2)
+gofstat(rnorm2)
+
+mu <- 
+Sigma <- 
+  
+Z <- rmnorm(1000, mu, Sigma)
+Z <- as.data.frame(Z)
+colnames(Z) <- c('x', 'y')
+head(Z)
+
+library(ggplot2)
+library(ggExtra)
+
+p <- ggplot(Z, aes(x=x, y=y)) + geom_point()
+p2 <- ggMarginal(p, type="histogram")
