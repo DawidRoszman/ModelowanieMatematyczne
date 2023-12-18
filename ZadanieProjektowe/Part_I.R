@@ -103,8 +103,8 @@ rnorm2 <- fitdist(r2, "norm")
 
 #MC
 
-mean <- rnorm2$estimate[1]
-sd <- rnorm2$estimate[2]
+mean2 <- rnorm2$estimate[1]
+sd2 <- rnorm2$estimate[2]
 
 N <- 1000
 n <- length(r2)
@@ -114,11 +114,11 @@ D <- c()
 
 for (i in 1:N) { 
   
-  Y <- rnorm(n, mean, sd) 
-  D[i] <- ks.test(Y,pnorm,mean, sd, exact=TRUE)$statistic
+  Y <- rnorm(n, mean2, sd2) 
+  D[i] <- ks.test(Y,pnorm,mean2, sd2, exact=TRUE)$statistic
 }
 
-dn <- ks.test(r2, pnorm, mean ,sd ,exact=TRUE)$statistic
+dn <- ks.test(r2, pnorm, mean2 ,sd2 ,exact=TRUE)$statistic
 hist(D,prob=T)
 points(dn,0,pch=19,col=2)
 
@@ -136,16 +136,29 @@ cdfcomp(rnorm2)
 ppcomp(rnorm2)
 gofstat(rnorm2)
 
-mu <- 
-Sigma <- 
-  
-Z <- rmnorm(1000, mu, Sigma)
-Z <- as.data.frame(Z)
-colnames(Z) <- c('x', 'y')
-head(Z)
+combined_data <- merge(ccc_d, ccc_s, by = "Data")
+kursy <- combined_data[,c(5,10)]
+install.packages("mnormt")
 
 library(ggplot2)
 library(ggExtra)
+library(mnormt)
+library(MASS)
+library(QRM)
+library(evir)
 
-p <- ggplot(Z, aes(x=x, y=y)) + geom_point()
-p2 <- ggMarginal(p, type="histogram")
+p <-  ggplot(kursy, aes(x=Zamkniecie.x, y=Zamkniecie.y)) + geom_point()
+p
+ggMarginal(p, type="histogram")
+
+mu <- colMeans(kursy); mu
+
+Sigma <- cov(kursy)             #estymator nieobciazony
+
+n <- dim(kursy)[1]; n
+Sigma_ob <- (n-1)*cov(kursy)/n  #estymator obciążony
+
+Sigma; Sigma_ob
+
+P <- cor(kursy)  #macierz korelacji
+P
