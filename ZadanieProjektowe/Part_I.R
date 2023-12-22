@@ -1,26 +1,33 @@
 #http://drageusgames.com/
-install.packages("fitdistrplus")
 library(fitdistrplus)
+library(ggplot2)
+library(ggExtra)
+library(mnormt)
+library(MASS)
+library(QRM)
+library(evir)
 
 ccc_d <- read.csv("D:/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
 ccc_d <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
-class(ccc_d)
+kurs_zamknieca_drg <- ccc_d$Zamkniecie
 
-kurs_zamkniecia <- ccc_d$Zamkniecie
+ccc_s <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/swg_d.csv")
+kurs_zamkniecia_swg <- ccc_s$Zamkniecie
+
 data <- as.Date(ccc_d$Data)
 ?plot
-plot(data, kurs_zamkniecia, xlab = "Data", ylab = "Kurs zamknięcia")
+plot(data, kurs_zamknieca_drg, xlab = "Data", ylab = "Kurs zamknięcia")
 
-hist(kurs_zamkniecia, probability = TRUE, xlab = "Kurs zamknięcia", main = "Histogram kursów zamknięcia")
+hist(kurs_zamknieca_drg, probability = TRUE, xlab = "Kurs zamknięcia", main = "Histogram kursów zamknięcia")
 
-sd(kurs_zamkniecia)
+sd(kurs_zamknieca_drg)
 
-descdist(kurs_zamkniecia)
+descdist(kurs_zamknieca_drg)
 
 
-fnorm <- fitdist(kurs_zamkniecia, "norm")
-fln <- fitdist(kurs_zamkniecia, "lnorm")
-fg <- fitdist(kurs_zamkniecia, "gamma")
+fnorm <- fitdist(kurs_zamknieca_drg, "norm")
+fln <- fitdist(kurs_zamknieca_drg, "lnorm")
+fg <- fitdist(kurs_zamknieca_drg, "gamma")
 
 fnorm
 fln
@@ -34,7 +41,7 @@ ppcomp(list(fnorm, fln, fg))
 gofstat(list(fnorm, fln, fg))
 
 N <- 1000
-n <- length(kurs_zamkniecia)
+n <- length(kurs_zamknieca_drg)
 
 D <- c()
 
@@ -47,7 +54,7 @@ for (i in 1:N) {
   D[i] <- ks.test(Y,pgamma,shape = shape, rate = rate,exact=TRUE)$statistic
 }
 
-dn <- ks.test(kurs_zamkniecia,pgamma,shape = shape, rate = rate,exact=TRUE)$statistic
+dn <- ks.test(kurs_zamknieca_drg,pgamma,shape = shape, rate = rate,exact=TRUE)$statistic
 hist(D,prob=T)
 points(dn,0,pch=19,col=2)
 
@@ -58,94 +65,86 @@ p_value <= alpha
 
 # PART II
 
-
-
-
 # Spółka I
-y <- log(kurs_zamkniecia)
-r <- diff(y)
-plot(r)
-plot(kurs_zamkniecia)
-hist(r, probability = T)
-fnorm_r <- fitdist(r, "norm")
+y_drg <- log(kurs_zamknieca_drg)
+r_drg <- diff(y_drg)
+plot(r_drg)
+plot(kurs_zamknieca_drg)
+hist(r_drg, probability = T)
+fnorm_r_drg <- fitdist(r_drg, "norm")
 
 # MC
 
-mean <- fnorm_r$estimate[1]
-sd <- fnorm_r$estimate[2]
+mean_drg <- fnorm_r_drg$estimate[1]
+sd_drg <- fnorm_r_drg$estimate[2]
 
 N <- 1000
-n <- length(r)
+n <- length(r_drg)
 
-D <- c()
+D_drg <- c()
 
 for (i in 1:N) { 
   
-  Y <- rnorm(n, mean, sd) 
-  D[i] <- ks.test(Y,pnorm,mean, sd, exact=TRUE)$statistic
+  Y <- rnorm(n, mean_drg, sd_drg) 
+  D_drg[i] <- ks.test(Y,pnorm,mean_drg, sd_drg, exact=TRUE)$statistic
 }
 
-dn <- ks.test(r, pnorm, mean ,sd ,exact=TRUE)$statistic
-hist(D,prob=T)
-points(dn,0,pch=19,col=2)
+dn_drg <- ks.test(r_drg, pnorm, mean_drg ,sd_drg ,exact=TRUE)$statistic
+hist(D_drg,prob=T)
+points(dn_drg,0,pch=19,col=2)
 
-p_value <- length(D[D>dn])/N; p_value
+p_value_drg <- length(D_drg[D_drg>dn_drg])/N; p_value_drg
 
 
 # Spółka II
-ccc_s <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/swg_d.csv")
-kurs_zamkniecia2 <- ccc_s$Zamkniecie
-y2 <- log(kurs_zamkniecia2)
-r2 <- diff(y2)
-plot(r2)
-hist(r2, probability = T)
-rnorm2 <- fitdist(r2, "norm")
+
+y_swg <- log(kurs_zamkniecia_swg)
+r_swg <- diff(y_swg)
+plot(r_swg)
+hist(r_swg, probability = T)
+fnorm_r_swg <- fitdist(r_swg, "norm")
 
 #MC
 
-mean2 <- rnorm2$estimate[1]
-sd2 <- rnorm2$estimate[2]
+mean_swg <- rnorm_swg$estimate[1]
+sd_swg <- rnorm_swg$estimate[2]
 
 N <- 1000
 n <- length(r2)
 
-D <- c()
+D_swg <- c()
 
 
 for (i in 1:N) { 
   
-  Y <- rnorm(n, mean2, sd2) 
-  D[i] <- ks.test(Y,pnorm,mean2, sd2, exact=TRUE)$statistic
+  Y <- rnorm(n, mean_swg, sd_swg) 
+  D_swg[i] <- ks.test(Y,pnorm,mean_swg, sd_swg, exact=TRUE)$statistic
 }
 
-dn <- ks.test(r2, pnorm, mean2 ,sd2 ,exact=TRUE)$statistic
-hist(D,prob=T)
-points(dn,0,pch=19,col=2)
+dn_swg <- ks.test(r_swg, pnorm, mean_swg ,sd_swg ,exact=TRUE)$statistic
+hist(D_swg,prob=T)
+points(dn_swg,0,pch=19,col=2)
 
-p_value <- length(D[D>dn])/N; p_value
+p_value_swg <- length(D_swg[D_swg>dn_swg])/N; p_value_swg
 
-denscomp(rnorm)
-qqcomp(rnorm)
-cdfcomp(rnorm)
-ppcomp(rnorm)
-gofstat(rnorm)
 
-denscomp(rnorm2)
-qqcomp(rnorm2)
-cdfcomp(rnorm2)
-ppcomp(rnorm2)
-gofstat(rnorm2)
+denscomp(fnorm_r_drg)
+qqcomp(fnorm_r_drg)
+cdfcomp(fnorm_r_drg)
+ppcomp(fnorm_r_drg)
+gofstat(fnorm_r_drg)
+
+denscomp(fnorm_r_swg)
+qqcomp(fnorm_r_swg)
+cdfcomp(fnorm_r_swg)
+ppcomp(fnorm_r_swg)
+gofstat(fnorm_r_swg)
+
 
 combined_data <- merge(ccc_d, ccc_s, by = "Data")
 kursy <- combined_data[,c(5,10)]
-install.packages("mnormt")
 
-library(ggplot2)
-library(ggExtra)
-library(mnormt)
-library(MASS)
-library(QRM)
-library(evir)
+
 
 p <-  ggplot(kursy, aes(x=Zamkniecie.x, y=Zamkniecie.y)) + geom_point()
 p
