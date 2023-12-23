@@ -1,4 +1,8 @@
 #http://drageusgames.com/
+install.packages("mnormt")
+install.packages("MASS")
+install.packages("QRM")
+
 library(fitdistrplus)
 library(ggplot2)
 library(ggExtra)
@@ -6,6 +10,8 @@ library(mnormt)
 library(MASS)
 library(QRM)
 library(evir)
+
+# DRG
 
 ccc_d <- read.csv("D:/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
 ccc_d <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
@@ -15,7 +21,7 @@ ccc_s <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/swg_d.csv
 kurs_zamkniecia_swg <- ccc_s$Zamkniecie
 
 data <- as.Date(ccc_d$Data)
-?plot
+
 plot(data, kurs_zamknieca_drg, xlab = "Data", ylab = "Kurs zamknięcia")
 
 hist(kurs_zamknieca_drg, probability = TRUE, xlab = "Kurs zamknięcia", main = "Histogram kursów zamknięcia")
@@ -62,6 +68,78 @@ p_value <- length(D[D>dn])/N; p_value
 
 alpha <- 0.05
 p_value <= alpha
+
+# SWG 
+
+library(fitdistrplus)
+
+# 1
+
+kurs_zam <- swg_d$Zamkniecie
+par(mfrow=c(1,1))
+plot(kurs_zam, type = "l", col = "blue",
+     main = paste("Wykres cen zamknięcia dla spółki Seco/Warwick"),
+     ylab = "Cena zamknięcia", xlab = "Data")
+
+hist(kurs_zam, prob=T, main = paste("Histogram cen zamknięcia dla spółki Seco/Warwick"), ylab = "Gęstość", xlab = "Cena zamknięcia")
+
+# 2
+
+descdist(kurs_zam)
+
+# 3
+
+fitNorm <- fitdist(kurs_zam, "norm")
+fitLogNorm <- fitdist(kurs_zam, "lnorm")
+fitExp <- fitdist(kurs_zam, "exp")
+fitGamma <- fitdist(kurs_zam, "gamma")
+
+fexp; fln; fnorm; fgamma
+
+# 4
+
+plot.legend <- c("normal", "lognormal", "exp", "gamma")
+
+denscomp(list(fitNorm, fitLogNorm, fitExp, fitGamma), legendtext = plot.legend)
+
+fexp <- fitdist(kurs_zam, "exp")
+fln <- fitdist(kurs_zam, "lnorm")
+fnorm <- fitdist(kurs_zam, "norm")
+fgamma <- fitdist(kurs_zam, "gamma")
+
+
+plot.legend <- c('exp','log-norm', 'norm', 'gamma')
+
+denscomp(list(fexp,fln,fnorm,fgamma),legendtext =plot.legend)
+cdfcomp(list(fexp,fln,fnorm,fgamma),legendtext =plot.legend)
+qqcomp(list(fexp,fln,fnorm,fgamma),legendtext =plot.legend)
+
+# 5
+
+gofstat(list(fexp, fln, fnorm, fgamma))
+
+n <- length(kurs_zam); n
+N <- 10000
+
+Dln <- c()
+
+for (i in 1:N) {
+  
+  Yln <- rlnorm(n,fln$estimate[1],fln$estimate[2])
+  
+  Dln[i] <-  ks.test(Yln,plnorm, fln$estimate[1],fln$estimate[2],exact=TRUE)$statistic
+}
+
+dn_ln <-  ks.test(kurs_zam,plnorm,fln$estimate[[1]],fln$estimate[[2]],exact=TRUE)$statistic
+dn_ln
+
+par(mfrow=c(1,1))
+hist(Dln,prob=T)
+points(dn_ln,0,pch=19,col=2)
+
+# ks.test(kurs_zam,plnorm,fln$estimate[[1]],fln$estimate[[2]],exact=TRUE)
+p_value_ln <- length(Dln[Dln>dn_ln])/N; p_value_ln
+
 
 # PART II
 
@@ -161,3 +239,33 @@ Sigma; Sigma_ob
 
 P <- cor(kursy)  #macierz korelacji
 P
+
+
+#generujemy probe z rozkladu N(mu,Sigma)
+n <- nrow(kursy); n
+
+set.seed(100)
+Z <- MASS::mvrnorm(n,mu=mu,Sigma=Sigma)
+#wykresy rozrzutu
+par(mfrow=c(1,2))
+plot(kursy, xlim=c(1.3,2.8),ylim=c(10,23))
+plot(Z,xlim=c(1.3,2.8),ylim=c(10,23))
+
+
+# Utwórz siatkę punktów
+x <- seq(min(mu[1] - 3 * sqrt(Sigma[1, 1])), max(mu[1] + 3 * sqrt(Sigma[1, 1])), length.out = 100)
+y <- seq(min(mu[2] - 3 * sqrt(Sigma[2, 2])), max(mu[2] + 3 * sqrt(Sigma[2, 2])), length.out = 100)
+f     <- function(x, y) dmnorm(cbind(x, y), mu, Sigma)  
+z     <- outer(x, y, f)
+
+
+# Narysuj wykres 3D
+persp(x, y, z, theta = -30, phi = 25, 
+      shade = 0.75, col = "lightblue", expand = 0.5, r = 2, 
+      ltheta = 25, ticktype = "detailed")
+
+gestosc_d <- dnorm(x,mean=mu[1],sd=sd(diff(log(ccc_d$Zamkniecie))))
+gestosc_s <- dnorm(x,mean=mu[1],sd=sd(diff(log(ccc_d$Zamkniecie))))
+
+plot(x, gestosc_d, type="l")
+plot(y, gestosc_s, type="l")
