@@ -142,9 +142,11 @@ p_value_ln <- length(Dln[Dln>dn_ln])/N; p_value_ln
 
 
 # PART II
+combined_data <- merge(ccc_d, ccc_s, by = "Data")
+kursy <- combined_data[,c(5,10)]
 
 # Spółka I
-y_drg <- log(kurs_zamknieca_drg)
+y_drg <- log(kursy$Zamkniecie.x)
 r_drg <- diff(y_drg)
 plot(r_drg)
 plot(kurs_zamknieca_drg)
@@ -176,7 +178,7 @@ p_value_drg <- length(D_drg[D_drg>dn_drg])/N; p_value_drg
 
 # Spółka II
 
-y_swg <- log(kurs_zamkniecia_swg)
+y_swg <- log(kursy$Zamkniecie.y)
 r_swg <- diff(y_swg)
 plot(r_swg)
 hist(r_swg, probability = T)
@@ -210,45 +212,42 @@ denscomp(fnorm_r_drg)
 qqcomp(fnorm_r_drg)
 cdfcomp(fnorm_r_drg)
 ppcomp(fnorm_r_drg)
-gofstat(fnorm_r_drg)
 
 denscomp(fnorm_r_swg)
 qqcomp(fnorm_r_swg)
 cdfcomp(fnorm_r_swg)
 ppcomp(fnorm_r_swg)
-gofstat(fnorm_r_swg)
-
-
-combined_data <- merge(ccc_d, ccc_s, by = "Data")
-kursy <- combined_data[,c(5,10)]
 
 
 
-p <-  ggplot(kursy, aes(x=Zamkniecie.x, y=Zamkniecie.y)) + geom_point()
+log_kursy = c(r_drg, r_swg)
+
+
+p <-  ggplot(kursy, aes(x=r_drg, y=r_swg)) + geom_point()
 p
 ggMarginal(p, type="histogram")
 
-mu <- colMeans(kursy); mu
+mu <- colMeans(log_kursy); mu
 
-Sigma <- cov(kursy)             #estymator nieobciazony
+Sigma <- cov(log_kursy)             #estymator nieobciazony
 
 n <- dim(kursy)[1]; n
-Sigma_ob <- (n-1)*cov(kursy)/n  #estymator obciążony
+Sigma_ob <- (n-1)*cov(log_kursy)/n  #estymator obciążony
 
 Sigma; Sigma_ob
 
-P <- cor(kursy)  #macierz korelacji
+P <- cor(log_kursy)  #macierz korelacji
 P
 
 
 #generujemy probe z rozkladu N(mu,Sigma)
-n <- nrow(kursy); n
+n <- nrow(log_kursy); n
 
 set.seed(100)
 Z <- MASS::mvrnorm(n,mu=mu,Sigma=Sigma)
 #wykresy rozrzutu
 par(mfrow=c(1,2))
-plot(kursy, xlim=c(1.3,2.8),ylim=c(10,23))
+plot(log_kursy, xlim=c(1.3,2.8),ylim=c(10,23))
 plot(Z,xlim=c(1.3,2.8),ylim=c(10,23))
 
 
