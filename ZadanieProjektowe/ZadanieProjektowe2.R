@@ -12,7 +12,8 @@ library(QRM)
 library(evir)
 
 # DRG
-
+ccc_d <- read.csv("C:/Users/droszman/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
+ccc_s <- read.csv("C:/Users/droszman/ModelowanieMatematyczne/ZadanieProjektowe/swg_d.csv")
 ccc_d <- read.csv("D:/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
 ccc_d <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
 kurs_zamknieca_drg <- ccc_d$Zamkniecie
@@ -220,10 +221,10 @@ ppcomp(fnorm_r_swg)
 
 
 
-log_kursy = c(r_drg, r_swg)
+log_kursy = data.frame(r_drg, r_swg)
 
 
-p <-  ggplot(kursy, aes(x=r_drg, y=r_swg)) + geom_point()
+p <-  ggplot(log_kursy, aes(x=r_drg, y=r_swg)) + geom_point()
 p
 ggMarginal(p, type="histogram")
 
@@ -247,8 +248,8 @@ set.seed(100)
 Z <- MASS::mvrnorm(n,mu=mu,Sigma=Sigma)
 #wykresy rozrzutu
 par(mfrow=c(1,2))
-plot(log_kursy, xlim=c(1.3,2.8),ylim=c(10,23))
-plot(Z,xlim=c(1.3,2.8),ylim=c(10,23))
+plot(log_kursy)
+plot(Z)
 
 
 # Utwórz siatkę punktów
@@ -268,3 +269,18 @@ gestosc_s <- dnorm(x,mean=mu[1],sd=sd(diff(log(ccc_d$Zamkniecie))))
 
 plot(x, gestosc_d, type="l")
 plot(y, gestosc_s, type="l")
+class(log_kursy)
+head(log_kursy)
+ggplot(log_kursy, aes(x=r_drg, y=r_swg)) + geom_point() 
+
+h <- lm(log_kursy$r_drg~log_kursy$r_swg, data=log_kursy)
+h
+sum <- summary(h)
+sum
+reszty <- h$residuals
+
+#histogram i qq-ploty
+hist(reszty)
+
+qqnorm(reszty)
+qqline(reszty,col=2)
