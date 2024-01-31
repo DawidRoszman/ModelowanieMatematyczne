@@ -12,8 +12,8 @@ library(QRM)
 library(evir)
 
 # DRG
-ccc_d <- read.csv("C:/Users/droszman/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
-ccc_s <- read.csv("C:/Users/droszman/ModelowanieMatematyczne/ZadanieProjektowe/swg_d.csv")
+ccc_d <- read.csv("~/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
+ccc_s <- read.csv("~/ModelowanieMatematyczne/ZadanieProjektowe/swg_d.csv")
 ccc_d <- read.csv("D:/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
 ccc_d <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv")
 kurs_zamknieca_drg <- ccc_d$Zamkniecie
@@ -44,6 +44,7 @@ denscomp(list(fnorm, fln, fg))
 qqcomp(list(fnorm, fln, fg))
 cdfcomp(list(fnorm, fln, fg))
 ppcomp(list(fnorm, fln, fg))
+
 
 gofstat(list(fnorm, fln, fg))
 
@@ -150,9 +151,13 @@ kursy <- combined_data[,c(5,10)]
 y_drg <- log(kursy$Zamkniecie.x)
 r_drg <- diff(y_drg)
 plot(r_drg)
-plot(kurs_zamknieca_drg)
 hist(r_drg, probability = T)
 fnorm_r_drg <- fitdist(r_drg, "norm")
+
+denscomp(fnorm_r_drg)
+qqcomp(fnorm_r_drg)
+cdfcomp(fnorm_r_drg)
+ppcomp(fnorm_r_drg)
 
 # MC
 
@@ -185,6 +190,11 @@ plot(r_swg)
 hist(r_swg, probability = T)
 fnorm_r_swg <- fitdist(r_swg, "norm")
 
+denscomp(fnorm_r_swg)
+qqcomp(fnorm_r_swg)
+cdfcomp(fnorm_r_swg)
+ppcomp(fnorm_r_swg)
+
 #MC
 
 mean_swg <- fnorm_r_swg$estimate[1]
@@ -207,18 +217,6 @@ hist(D_swg,prob=T)
 points(dn_swg,0,pch=19,col=2)
 
 p_value_swg <- length(D_swg[D_swg>dn_swg])/N; p_value_swg
-
-
-denscomp(fnorm_r_drg)
-qqcomp(fnorm_r_drg)
-cdfcomp(fnorm_r_drg)
-ppcomp(fnorm_r_drg)
-
-denscomp(fnorm_r_swg)
-qqcomp(fnorm_r_swg)
-cdfcomp(fnorm_r_swg)
-ppcomp(fnorm_r_swg)
-
 
 
 log_kursy = data.frame(r_drg, r_swg)
@@ -267,8 +265,8 @@ persp(x, y, z, theta = -30, phi = 25,
 gestosc_d <- dnorm(x,mean=mu[1],sd=sd(diff(log(ccc_d$Zamkniecie))))
 gestosc_s <- dnorm(x,mean=mu[1],sd=sd(diff(log(ccc_d$Zamkniecie))))
 
-plot(x, gestosc_d, type="l")
-plot(y, gestosc_s, type="l")
+plot(x, gestosc_d, type="l", xlim=c(-0.20,0.20 ))
+plot(y, gestosc_s, type="l", xlim=c(-0.20,0.20 ))
 class(log_kursy)
 head(log_kursy)
 ggplot(log_kursy, aes(x=r_drg, y=r_swg)) + geom_point() 
