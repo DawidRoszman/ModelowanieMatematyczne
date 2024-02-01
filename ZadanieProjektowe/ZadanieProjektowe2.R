@@ -127,6 +127,7 @@ plot.legend <- c('exp','log-norm', 'norm', 'gamma')
 denscomp(list(fexp,fln,fnorm,fgamma),legendtext =plot.legend)
 cdfcomp(list(fexp,fln,fnorm,fgamma),legendtext =plot.legend)
 qqcomp(list(fexp,fln,fnorm,fgamma),legendtext =plot.legend)
+ppcomp(list(fexp,fln,fnorm,fgamma),legenttext =plot.legend)
 
 # 5
 
@@ -307,25 +308,43 @@ model_lm <- lm(log_kursy$r_drg ~ log_kursy$r_swg, data = log_kursy)
 # Reszty modelu
 reszty <- residuals(model_lm); reszty; mean(reszty)
 
-# Histogram i QQ-plot reszt
 hist(reszty, main = "Histogram reszt modelu", xlab = "Reszty modelu")
 qqnorm(reszty)
 qqline(reszty, col = 2)
 
-# Wykres danych i regresji
 plot(log_kursy$r_drg, log_kursy$r_swg, main = "Model regresji liniowej", xlab = "Różnica log(kursu) DRG", ylab = "Różnica log(kursu) SWG")
 abline(model_lm, col = "red")
 
-# Podsumowanie modelu
 summary(model_lm)
 
 RSS <- sum(residuals(model_lm)^2); RSS
 
-# Średnia log-zwrotów R1
-srednia_r1 <- mean(log_kursy$r_drg)
+# Uproszczony model
 
-# Przewidywanie log-zwrotów R2 na poziomie średniej R1
-predykcja_r2 <- predict(model_lm, newdata = data.frame(r_drg = srednia_r1)); predykcja_r2
+uproszczony_model_b0 <- lm(r_drg ~ 1, data = df)  # Prosty model bez r_swg
+
+plot(df$r_drg, df$r_swg, main = "Uproszczony Model bez r_swg (b0)", xlab = "r_drg", ylab = "r_swg")
+abline(uproszczony_model_b0, col = "red")
+
+summary(uproszczony_model)
+
+# Predykcja
+
+set.seed(100)
+tren.indeksy <- sample(1:nrow(df), 0.8*nrow(df)) 
+
+tren.dane <- df[tren.indeksy, ] 
+test.dane <- df[-tren.indeksy, ]
+
+dist.lm <- lm(r_drg ~ r_swg, data=tren.dane)  
+dist.lm$coefficients
+
+dist.pred <- predict(dist.lm, test.dane) 
+
+dist.h <- data.frame(cbind(real=test.dane$r_drg, pred=dist.pred))
+qqplot(dist.h$real, dist.h$pred, col = "blue", main = "Q-Q Plot", xlab = "Teoretyczne kwantyle", ylab = "Obserwowane kwantyle")
+
+abline(a = 0, b = 1, col = "red", lty = 2)
 
 # Prosta: R2 = 0.003916 - 0.003338 * R1
 # Współczynnik determinacji: 3.781e-05
