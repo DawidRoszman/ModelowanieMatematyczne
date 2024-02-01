@@ -19,7 +19,11 @@ ccc_d <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/drg_d.csv
 kurs_zamknieca_drg <- ccc_d$Zamkniecie
 
 ccc_s <- read.csv("~/Code/UG/ModelowanieMatematyczne/ZadanieProjektowe/swg_d.csv")
+
+#1
+
 kurs_zamkniecia_swg <- ccc_s$Zamkniecie
+
 
 data <- as.Date(ccc_d$Data)
 
@@ -27,10 +31,14 @@ plot(data, kurs_zamknieca_drg, xlab = "Data", ylab = "Kurs zamknięcia")
 
 hist(kurs_zamknieca_drg, probability = TRUE, xlab = "Kurs zamknięcia", main = "Histogram kursów zamknięcia")
 
+
+#2
+
 sd(kurs_zamknieca_drg)
 
 descdist(kurs_zamknieca_drg)
 
+#3
 
 fnorm <- fitdist(kurs_zamknieca_drg, "norm")
 fln <- fitdist(kurs_zamknieca_drg, "lnorm")
@@ -40,6 +48,8 @@ fnorm
 fln
 fg
 
+#4
+
 denscomp(list(fnorm, fln, fg))
 qqcomp(list(fnorm, fln, fg))
 cdfcomp(list(fnorm, fln, fg))
@@ -47,6 +57,8 @@ ppcomp(list(fnorm, fln, fg))
 
 
 gofstat(list(fnorm, fln, fg))
+
+#5
 
 N <- 1000
 n <- length(kurs_zamknieca_drg)
@@ -147,7 +159,7 @@ p_value_ln <- length(Dln[Dln>dn_ln])/N; p_value_ln
 combined_data <- merge(ccc_d, ccc_s, by = "Data")
 kursy <- combined_data[,c(5,10)]
 
-# Spółka I
+# Spółka I DRG
 y_drg <- log(kursy$Zamkniecie.x)
 r_drg <- diff(y_drg)
 plot(r_drg)
@@ -218,6 +230,7 @@ points(dn_swg,0,pch=19,col=2)
 
 p_value_swg <- length(D_swg[D_swg>dn_swg])/N; p_value_swg
 
+#B
 
 log_kursy = data.frame(r_drg, r_swg)
 
@@ -246,8 +259,8 @@ set.seed(100)
 Z <- MASS::mvrnorm(n,mu=mu,Sigma=Sigma)
 #wykresy rozrzutu
 par(mfrow=c(1,2))
-plot(log_kursy)
-plot(Z)
+plot(log_kursy, main = "Dane orginalne")
+plot(Z, main = "Dane wygenerowane")
 
 
 # Utwórz siatkę punktów
@@ -271,6 +284,8 @@ class(log_kursy)
 head(log_kursy)
 ggplot(log_kursy, aes(x=r_drg, y=r_swg)) + geom_point() 
 
+#Dodatkowe
+
 h <- lm(log_kursy$r_drg~log_kursy$r_swg, data=log_kursy)
 h
 sum <- summary(h)
@@ -282,3 +297,38 @@ hist(reszty)
 
 qqnorm(reszty)
 qqline(reszty,col=2)
+
+
+# Projekt 3
+
+# Model regresji liniowej
+model_lm <- lm(log_kursy$r_drg ~ log_kursy$r_swg, data = log_kursy)
+
+# Reszty modelu
+reszty <- residuals(model_lm); reszty; mean(reszty)
+
+# Histogram i QQ-plot reszt
+hist(reszty, main = "Histogram reszt modelu", xlab = "Reszty modelu")
+qqnorm(reszty)
+qqline(reszty, col = 2)
+
+# Wykres danych i regresji
+plot(log_kursy$r_drg, log_kursy$r_swg, main = "Model regresji liniowej", xlab = "Różnica log(kursu) DRG", ylab = "Różnica log(kursu) SWG")
+abline(model_lm, col = "red")
+
+# Podsumowanie modelu
+summary(model_lm)
+
+RSS <- sum(residuals(model_lm)^2); RSS
+
+# Średnia log-zwrotów R1
+srednia_r1 <- mean(log_kursy$r_drg)
+
+# Przewidywanie log-zwrotów R2 na poziomie średniej R1
+predykcja_r2 <- predict(model_lm, newdata = data.frame(r_drg = srednia_r1)); predykcja_r2
+
+# Prosta: R2 = 0.003916 - 0.003338 * R1
+# Współczynnik determinacji: 3.781e-05
+# ε ∼ N(0, σ2): -3.445358e-19
+# RSS: 0.122421
+# predykcja_r2: 0.003918072 
